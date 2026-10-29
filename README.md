@@ -9,6 +9,6 @@
 
 ## Использование
 
-./nettest.py wlan0
+./nettest wlan0
 
 Ctrl+C для выхода 
