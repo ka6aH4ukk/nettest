@@ -1,0 +1,47 @@
+#!/usr/local/bin/python3.12
+
+import subprocess
+import time
+import sys
+
+def main():
+    interface = "wlan0"
+    try:
+        cmdoutput = subprocess.run(['netstat', '-b', '-I', sys.argv[1]], capture_output=True, text=True)
+    except IndexError:
+        print("Usage: nettest [interface]")
+        exit()
+    cmdarray = (cmdoutput.stdout)
+    cmdarray = cmdarray.split()
+    try:
+        i_bytes_old = int(cmdarray[19])
+    except IndexError:
+        print("Invalid interface!")
+        exit()
+    o_bytes_old = int(cmdarray[22])
+    # i_mb_old = i_bytes / 1024 / 1024, 2
+    # o_mb_old = o_bytes / 1024 / 1024, 2
+    time_old = time.monotonic()
+    time.sleep(1)
+    cmdoutput = subprocess.run(['netstat', '-b', '-I', sys.argv[1]], capture_output=True, text=True)
+    cmdarray = (cmdoutput.stdout)
+    cmdarray = cmdarray.split()
+    i_bytes_new = int(cmdarray[19])
+    o_bytes_new = int(cmdarray[22])
+    time_new = time.monotonic()
+    delta_time = time_old - time_new
+    delta_i_bytes = i_bytes_old - i_bytes_new
+    delta_o_bytes = o_bytes_old - o_bytes_new
+    i_bytes_per_second = delta_i_bytes / delta_time
+    o_bytes_per_second = delta_o_bytes / delta_time
+    i_mbits_per_second = ((i_bytes_per_second * 8) / 1024) / 1024
+    o_mbits_per_second = ((o_bytes_per_second * 8) / 1024) / 1024
+    print(f"\rЗагрузка: {i_mbits_per_second:.5f} Mbits; Отдача: {o_mbits_per_second:.5f} Mbits;             ", end="")
+    
+
+while True:
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nExit!")
+        exit()
